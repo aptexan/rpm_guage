@@ -6,6 +6,8 @@ This installment:
   - Figured out how to obtain and setup GLUT library.
   - Functions for drawing Arc/Circle and line segments.
   - Builds and runs the app, displaying the RPM guage dial and the needle.
+  - Functions for positioning and printing Text.
+  - Changed DegType from int to float (was causing skewed minor slot markings).
 NEXT: Figure out how to use/code to interact with mouse/keyboard 
     and user input controls.
 */
@@ -26,7 +28,7 @@ NEXT: Figure out how to use/code to interact with mouse/keyboard
 // Convert  degree to radian
 #define RAD(deg) (((deg) * PI) / 180)
 
-using DegType = int;
+using DegType = float;
 
 // Draw an arc given:
 // 1) start to end angle (anti-clockwise) in degrees and 2) the radius
@@ -73,7 +75,7 @@ void DrawRadialSegment(DegType deg_angle, float seg_begin, float seg_end,
 }
 
 
-void PrintTextXYPos(float x, float y, std::string str) {
+void PrintTextXYPos(std::string str, float x, float y) {
   size_t sz = str.size();
   glRasterPos2f(x, y);  // position to print
   for (size_t i = 0; i < sz; i++) { // loop until i is greater then l
@@ -100,7 +102,7 @@ void DrawReferenceGrid_2B_deleted() {
   char c = n + '0';
   for (float y = -1.0; y < 1.0; y += 0.05) {
     for (float x = -1.0; x < 1.0; x += 0.05) {
-      PrintTextXYPos(x, y, std::string{ c});
+      PrintTextXYPos(std::string{ c }, x, y);
       n = ++n % 10;
       c = n + '0';
     }
@@ -121,9 +123,11 @@ void Render(void) {
   DrawArc(dial_start, dial_end, inner_dial_line);
    
   // Draw RPM guage needle.
-  DrawRadialSegment(135, 0.0, 0.65);
+  DrawRadialSegment(135, 0.02, 0.7);
+  DrawArc(0, 360, 0.02);
+  PrintTextXYPos("RPM x1000", -0.15, -0.1);
 
-  //<1.1 Mark the dial with slots
+  //<1.1 Mark the dial with major slots
   DegType dial_full_angle{}; // full span of the dial as an angle(in degrees).
   if (dial_start <= dial_end)
     dial_full_angle = dial_end - dial_start;
@@ -132,7 +136,7 @@ void Render(void) {
 
   const DegType dial_slots = 10;
   const DegType slot_angle = dial_full_angle / dial_slots;
- 
+  int slot_num = 10;
   for ( DegType mark_pos = dial_start, done_angle = 0; 
         done_angle <= dial_full_angle; // <--  not using mark_pos because it wraps over 360 deg.
         done_angle += slot_angle, mark_pos += slot_angle) {
@@ -140,6 +144,20 @@ void Render(void) {
       mark_pos = mark_pos - 360;
     }
     DrawRadialSegment(mark_pos, inner_dial_line, outer_dial_line);
+    
+    // Mark the dial with minor slots.
+    if (slot_num > 0) {
+      DegType minor_slot_angle = slot_angle / 10;
+      for (int i = 1; i < 10; ++i) {
+        DrawRadialSegment(mark_pos + (i * minor_slot_angle), inner_dial_line, outer_dial_line - 0.03);
+      }
+    }
+    
+    // Print dial number markings.
+    float offset = 0.09;
+    if (mark_pos <= 135 || mark_pos > 270)
+      offset = 0.05;
+    PrintTextRadialPos(std::to_string(slot_num--), mark_pos, outer_dial_line + offset);
   }
   //>1.1
   //>1
