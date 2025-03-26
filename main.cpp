@@ -19,7 +19,7 @@ NEXT: Figure out how to use/code to interact with mouse/keyboard
 #include <iostream>
 #include <string>
 
-#include "Types.h"
+#include "Common.h"
 #include "App.h"
 
 // !!! RESTRICTION: !!!

@@ -1,5 +1,5 @@
 #include "ThrottleWidget.h"
-#include "Types.h"
+#include "Common.h"
 
 #include <GL\glew.h>
 #include <GL\freeglut.h>
