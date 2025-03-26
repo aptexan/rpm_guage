@@ -42,12 +42,24 @@
     // anti-clockwise angle
     const DegType dial_start = 315;
     const DegType dial_end = 225;
-    const float inner_dial_line = 0.75f;
-    const float outer_dial_line = 0.8f;
+    const float inner_dial_radius = 0.75f;
+    const float outer_dial_radius = 0.8f;
 
-    // Draw the dials inner and outer lines.
-    DrawArc(dial_start, dial_end, outer_dial_line);
-    DrawArc(dial_start, dial_end, inner_dial_line);
+    DrawArcFilled(dial_start, dial_end, outer_dial_radius, inner_dial_radius,
+                  0.3f, 0.3f, 0.3f); // gray background
+    DrawArcFilled(dial_start, 10, outer_dial_radius, inner_dial_radius,
+                  0.5f, 0.0f, 0.0f); // red zone
+    DrawArcFilled(10, 45, outer_dial_radius, inner_dial_radius,
+                  0.0f, 0.5f, 0.5f); // yellow zone
+    DrawArcFilled(45, 90, outer_dial_radius, inner_dial_radius,
+                  0.0f, 0.5f, 0.0f); // green zone
+                                     // Rest is gray. 
+
+    glColor3f(1, 1, 1);
+    // Draw the dials inner and outer lines (draw borders).
+    DrawArc(dial_start, dial_end, outer_dial_radius);
+    DrawArc(dial_start, dial_end, inner_dial_radius);
+
 
     DegType dial_full_angle{}; // full span of the dial as an angle(in degrees).
     if (dial_start <= dial_end)
@@ -72,13 +84,13 @@
       if (mark_pos >= 360) {
         mark_pos = mark_pos - 360;
       }
-      DrawRadialSegment(mark_pos, inner_dial_line, outer_dial_line);
+      DrawRadialSegment(mark_pos, inner_dial_radius, outer_dial_radius);
 
       // Mark the dial with minor slots.
       if (slot_num > 0) {
         DegType minor_slot_angle = slot_angle / 10;
         for (int i = 1; i < 10; ++i) {
-          DrawRadialSegment(mark_pos + (i * minor_slot_angle), inner_dial_line, outer_dial_line - 0.03f);
+          DrawRadialSegment(mark_pos + (i * minor_slot_angle), inner_dial_radius, outer_dial_radius - 0.03f);
         }
       }
 
@@ -86,6 +98,6 @@
       float offset = 0.09f;
       if (mark_pos <= 135 || mark_pos > 270)
         offset = 0.05f;
-      PrintTextRadialPos(std::to_string(slot_num--), mark_pos, outer_dial_line + offset);
+      PrintTextRadialPos(std::to_string(slot_num--), mark_pos, outer_dial_radius + offset);
     }
   }
