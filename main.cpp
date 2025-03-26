@@ -160,7 +160,7 @@ void DrawThrottleControl() {
   glVertex2f(left, bottom);
   glEnd();
 
-  // Throttle high/low buttons - clockwise vertices
+  //< Throttle high/low buttons - clockwise vertices
   glBegin(GL_LINE_LOOP);
   float btn_top = top + 0.05;
   float btn_bottom = bottom - 0.05;
@@ -176,7 +176,23 @@ void DrawThrottleControl() {
   glVertex2f(btn_left, btn_mid);
   glVertex2f(btn_right, btn_mid);
   glEnd();
-
+  // Up and down triangle in the throttle buttons  
+  float btn_width = fabs(btn_left - btn_right);
+  float margin = 0.01;
+  glBegin(GL_TRIANGLES);
+  glColor3f(0, 0.5, 0);
+  glVertex2f((btn_left + btn_width / 2), btn_top - margin); // x, y of up botton top vertex.
+  glVertex2f(btn_right - margin, btn_mid + margin);         // x, y of next clock wise vertices, here on.
+  glVertex2f(btn_left + margin, btn_mid + margin);
+  glEnd();
+  // same for down btn 
+  glBegin(GL_TRIANGLES);
+  glColor3f(0.5, 0, 0);
+  glVertex2f((btn_left + btn_width / 2), btn_bottom + margin); // x, y of down botton bottom vertex.
+  glVertex2f(btn_left + margin, btn_mid - margin);             // x, y of next clock wise vertices, here on.
+  glVertex2f(btn_right - margin, btn_mid - margin);            
+  glColor3f(1,1,1);
+  glEnd();
 }
 
 void DrawDial() {
