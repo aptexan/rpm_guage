@@ -60,7 +60,7 @@
     DegType needle_angle = dial_start + (dial_full_angle * (10000 - rpm)) / 10000;
     DrawRadialSegment(needle_angle, 0.02f, 0.7f);
     DrawArc(0, 360, 0.02f);
-    PrintTextXYPos("RPM x1000", -0.15f, -0.1f);
+    PrintTextXYPos("RPM x1000", -0.2f, -0.3f);
 
     // Mark the dial with major slots
     const DegType dial_slots = 10;

@@ -16,23 +16,29 @@
       // DOWN button hit.
       _rpm = _rpm <= 0 ? 0 : _rpm - _smallest_step;
     }
+
+    // Print updated RPM in widget's text field.
+    UpdateWidgetRPMLabel();
   }
 
+  void ThrottleWidget::UpdateWidgetRPMLabel() {
+    PrintTextXYPos(std::to_string(_rpm), _left + 0.07f, _bottom + 0.03f);
+  }
   void ThrottleWidget::Draw() {
     // RPM numeric display - clock-wise vertices
     glBegin(GL_LINE_LOOP);
-    glVertex2f(left, top);
-    glVertex2f(right, top);
-    glVertex2f(right, bottom);
-    glVertex2f(left, bottom);
+    glVertex2f(_left, _top);
+    glVertex2f(_right, _top);
+    glVertex2f(_right, _bottom);
+    glVertex2f(_left, _bottom);
     glEnd();
 
     //< Throttle high/low buttons - clockwise vertices
     glBegin(GL_LINE_LOOP);
-    _btn_top = top + 0.05f;
-    _btn_bottom = bottom - 0.05f;
-    _btn_left = right;
-    _btn_right = right + 0.1f;
+    _btn_top = _top + 0.05f;
+    _btn_bottom = _bottom - 0.05f;
+    _btn_left = _right;
+    _btn_right = _right + 0.1f;
     glVertex2f(_btn_left, _btn_top);
     glVertex2f(_btn_right, _btn_top);
     glVertex2f(_btn_right, _btn_bottom);
@@ -60,4 +66,6 @@
     glVertex2f(_btn_right - margin, _btn_mid - margin);
     glColor3f(1, 1, 1);
     glEnd();
+
+    UpdateWidgetRPMLabel();
   }

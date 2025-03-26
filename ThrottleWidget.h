@@ -6,6 +6,8 @@ public:
   void OnMouse(float x, float y); // updates _rpm
   unsigned GetRPM() { return _rpm;  };
   unsigned GetMaxRPM() { return _max_rpm;  }
+private:
+  void UpdateWidgetRPMLabel();
 
 private:
   unsigned _rpm{};
@@ -13,10 +15,10 @@ private:
   const unsigned _smallest_step = 50;
 
   // Positions of the rpm numeric text box.
-  float left{ -0.85f };
-  float right{ -0.5f };
-  float top{ -0.8f };
-  float bottom{ -0.9f };
+  float _left{ -0.85f };
+  float _right{ -0.5f };
+  float _top{ -0.8f };
+  float _bottom{ -0.9f };
 
 
   // These buttom positions will be used for mouse hit test.
