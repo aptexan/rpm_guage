@@ -128,23 +128,25 @@
     const DegType dial_end = 225;
     const float inner_dial_line = 0.75f;
     const float outer_dial_line = 0.8f;
-    //<1 Draw RPM guage range dial.
-    // draw the dials inner and outer lines.
+
+    // Draw the dials inner and outer lines.
     DrawArc(dial_start, dial_end, outer_dial_line);
     DrawArc(dial_start, dial_end, inner_dial_line);
 
-    // Draw RPM guage needle.
-    DrawRadialSegment(135, 0.02f, 0.7f);
-    DrawArc(0, 360, 0.02f);
-    PrintTextXYPos("RPM x1000", -0.15f, -0.1f);
-
-    //<1.1 Mark the dial with major slots
     DegType dial_full_angle{}; // full span of the dial as an angle(in degrees).
     if (dial_start <= dial_end)
       dial_full_angle = dial_end - dial_start;
     else
       dial_full_angle = (360 - dial_start) + dial_end;
 
+    // Draw RPM guage needle.
+    unsigned rpm = _throttle.GetRPM();
+    DegType needle_angle = dial_start + (dial_full_angle * (10000 - rpm)) / 10000;
+    DrawRadialSegment(needle_angle, 0.02f, 0.7f);
+    DrawArc(0, 360, 0.02f);
+    PrintTextXYPos("RPM x1000", -0.15f, -0.1f);
+
+    // Mark the dial with major slots
     const DegType dial_slots = 10;
     const DegType slot_angle = dial_full_angle / dial_slots;
     int slot_num = 10;
@@ -164,12 +166,10 @@
         }
       }
 
-      // Print dial number markings.
+      // Print then dial's major slot numbers.
       float offset = 0.09f;
       if (mark_pos <= 135 || mark_pos > 270)
         offset = 0.05f;
       PrintTextRadialPos(std::to_string(slot_num--), mark_pos, outer_dial_line + offset);
     }
-    //>1.1
-    //>1
   }

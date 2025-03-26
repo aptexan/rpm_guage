@@ -6,18 +6,19 @@
 #include <math.h>
 
   void ThrottleWidget::OnMouse(float x, float y) {
-    // TODO: implement
-    // 1) check up or down hit
-    // 2) Accordingly update _rpm
+    if (_btn_top > y && y > _btn_mid
+      && _btn_right > x && x > _btn_left) {
+      // UP button hit.
+      _rpm = _rpm >= _max_rpm ? _max_rpm : _rpm + _smallest_step;
+    }
+    if (_btn_mid > y && y > _btn_bottom
+      && _btn_right > x && x > _btn_left) {
+      // DOWN button hit.
+      _rpm = _rpm <= 0 ? 0 : _rpm - _smallest_step;
+    }
   }
 
   void ThrottleWidget::Draw() {
-    // Reference positions
-    float left{ -0.85f };
-    float right{ -0.5f };
-    float top{ -0.8f };
-    float bottom{ -0.9f };
-
     // RPM numeric display - clock-wise vertices
     glBegin(GL_LINE_LOOP);
     glVertex2f(left, top);
