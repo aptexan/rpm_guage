@@ -67,6 +67,15 @@ void DrawArc(DegType deg_begin, DegType deg_end, float radius) {
 void DrawArcFilled( const DegType deg_begin, const DegType deg_end, 
                     const float outer_radius, const float inner_radius,
                     const float red, const float green, const float blue) {
+  float step_size = 0.25;
+  float deg_steps{};
+  if (deg_begin < deg_end) {
+    deg_steps = static_cast<unsigned>(deg_end - deg_begin + 1);
+  }
+  else {
+    deg_steps = static_cast<unsigned>((360 - deg_begin) + deg_end + 1);
+  }
+  deg_steps /= step_size;
 
   using Vertex = std::array<GLdouble, 3>;
   // We need to pre-allocate reserve vector memory for max items
@@ -76,16 +85,9 @@ void DrawArcFilled( const DegType deg_begin, const DegType deg_end,
   // !!! WARNING !!!
   // Assumption here that the granularity of stepping through
   // the angle is minimum 1 degree.
-  std::vector<Vertex> verts(360 * 2 + 4, Vertex{});
+  std::vector<Vertex> verts((360 * 2 + 4)/step_size, Vertex{});
   size_t vert_idx{}; // vertices index
   
-  unsigned deg_steps{};
-  if (deg_begin < deg_end) {
-    deg_steps = static_cast<unsigned>(deg_end - deg_begin + 1);
-  }
-  else {
-    deg_steps = static_cast<unsigned>((360 - deg_begin) + deg_end + 1);
-  }
   
   //Setup tesselator
   GLUtesselator* tess = gluNewTess();
@@ -106,13 +108,13 @@ void DrawArcFilled( const DegType deg_begin, const DegType deg_end,
   gluTessBeginPolygon(tess, nullptr);
   gluTessBeginContour(tess);
 
-  unsigned deg_steps_saved = deg_steps;
+  float deg_steps_saved = deg_steps;
   // deg :  This var will be the angle adjusted as we draw 
   //        outer arc, left radial segment, inner arc 
   //        and right radial segment, completing the poly.
   DegType deg = deg_begin; 
   // vertices for outer arc - anti-clockwise
-  for (; deg_steps > 0; ++deg, --deg_steps) {
+  for (; deg_steps > 0; deg = deg + step_size, --deg_steps) {
     verts[vert_idx][0] = RADIAL_X(RAD(deg), outer_radius);
     verts[vert_idx][1] = RADIAL_Y(RAD(deg), outer_radius);
     //printf("Outer: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
@@ -122,7 +124,7 @@ void DrawArcFilled( const DegType deg_begin, const DegType deg_end,
 
   // vertices for inner arc - clockwise
   deg_steps = deg_steps_saved;
-  for (; deg_steps > 0; --deg, --deg_steps) {
+  for (; deg_steps > 0; deg = deg - step_size, --deg_steps) {
     verts[vert_idx][0] = RADIAL_X(RAD(deg), inner_radius);
     verts[vert_idx][1] = RADIAL_Y(RAD(deg), inner_radius);
     //printf("Inner: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
