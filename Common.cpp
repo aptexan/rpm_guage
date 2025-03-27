@@ -12,18 +12,18 @@
 //< Tessellation callback functions
 void GLAPIENTRY CbTessBegin(GLenum type) {
   glBegin(type);
-  printf("Tess Begin: %d\n", type);
+  //printf("Tess Begin: %d\n", type);
 }
 
 void GLAPIENTRY CbTessVertex(void* vertex_data) {
   GLdouble* vert = (GLdouble*)vertex_data;
   glVertex3dv(vert);
-  printf("Tess Vertex: %f, %f, %f\n", vert[0], vert[1], vert[2]);
+  //printf("Tess Vertex: %f, %f, %f\n", vert[0], vert[1], vert[2]);
 }
 
 void GLAPIENTRY CbTessEnd() {
   glEnd();
-  printf("Tess End\n");
+  //printf("Tess End\n");
 }
 
 void GLAPIENTRY CbTessCombine(GLdouble coords[3], void* vertex_data[4],
@@ -33,7 +33,7 @@ void GLAPIENTRY CbTessCombine(GLdouble coords[3], void* vertex_data[4],
   vertex[1] = coords[1];
   vertex[2] = coords[2];
   *outData = vertex;
-  printf("Tess Combine: %f, %f, %f\n", coords[0], coords[1], coords[2]);
+  //printf("Tess Combine: %f, %f, %f\n", coords[0], coords[1], coords[2]);
 }
 //>
 
@@ -115,7 +115,7 @@ void DrawArcFilled( const DegType deg_begin, const DegType deg_end,
   for (; deg_steps > 0; ++deg, --deg_steps) {
     verts[vert_idx][0] = RADIAL_X(RAD(deg), outer_radius);
     verts[vert_idx][1] = RADIAL_Y(RAD(deg), outer_radius);
-    printf("Outer: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
+    //printf("Outer: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
     gluTessVertex(tess, verts[vert_idx].data(), verts[vert_idx].data());
     ++vert_idx;
   }
@@ -125,7 +125,7 @@ void DrawArcFilled( const DegType deg_begin, const DegType deg_end,
   for (; deg_steps > 0; --deg, --deg_steps) {
     verts[vert_idx][0] = RADIAL_X(RAD(deg), inner_radius);
     verts[vert_idx][1] = RADIAL_Y(RAD(deg), inner_radius);
-    printf("Inner: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
+    //printf("Inner: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
     gluTessVertex(tess, verts[vert_idx].data(), verts[vert_idx].data());
     ++vert_idx;
   }
