@@ -9,6 +9,34 @@
 #include <vector>
 #include <array>
 
+//< Tessellation callback functions
+void GLAPIENTRY CbTessBegin(GLenum type) {
+  glBegin(type);
+  printf("Tess Begin: %d\n", type);
+}
+
+void GLAPIENTRY CbTessVertex(void* vertex_data) {
+  GLdouble* vert = (GLdouble*)vertex_data;
+  glVertex3dv(vert);
+  printf("Tess Vertex: %f, %f, %f\n", vert[0], vert[1], vert[2]);
+}
+
+void GLAPIENTRY CbTessEnd() {
+  glEnd();
+  printf("Tess End\n");
+}
+
+void GLAPIENTRY CbTessCombine(GLdouble coords[3], void* vertex_data[4],
+  GLfloat weight[4], void** outData) {
+  GLdouble* vertex = new GLdouble[3];
+  vertex[0] = coords[0];
+  vertex[1] = coords[1];
+  vertex[2] = coords[2];
+  *outData = vertex;
+  printf("Tess Combine: %f, %f, %f\n", coords[0], coords[1], coords[2]);
+}
+//>
+
 // Draw an arc given:
 // 1) start to end angle (anti-clockwise) in degrees and 2) the radius
 //   0 (and 360) degree is on positive x-axis
@@ -34,37 +62,19 @@ void DrawArc(DegType deg_begin, DegType deg_end, float radius) {
   glEnd();
 }
 
-//< Tessalation callbacks
-void CbTessBegin() {
-  glBegin(GL_POLYGON);
-  std::cout << "CbTessBegin()" << std::endl;
-}
-
-void CbTessVertex(GLdouble *vert) {
-  // WARNING: lose of precision(double to float)
-  glVertex2d(vert[0], vert[1]);
-  std::cout << (float)vert[0] << " " << (float)vert[0] << std::endl;
-}
-
-void CbTessEnd() {
-  glEnd();
-  std::cout << "CbTessEnd()" << std::endl;
-}
-//>
-
 // Filled arc has two arcs (inner and outer) joined at the end
 // with radial segment and has a fill color.
-void DrawArcFilled( DegType deg_begin, DegType deg_end, 
-                    float outer_radius, float inner_radius,
-                    float red, float green, float blue) {
+void DrawArcFilled( const DegType deg_begin, const DegType deg_end, 
+                    const float outer_radius, const float inner_radius,
+                    const float red, const float green, const float blue) {
 
   using Vertex = std::array<GLdouble, 3>;
   // We need to pre-allocate reserve vector memory for max items
   // because, vector expansion will reallocate and move the data.
   // All this because the vertex item address needs to be the same 
   // in tesselator callbacks.
-  // !!! WARNING !!!  !!! IMPORTANT !!!
-  // Big assumption here that the granularity of stepping through
+  // !!! WARNING !!!
+  // Assumption here that the granularity of stepping through
   // the angle is minimum 1 degree.
   std::vector<Vertex> verts(360 * 2 + 4, Vertex{});
   size_t vert_idx{}; // vertices index
@@ -78,51 +88,47 @@ void DrawArcFilled( DegType deg_begin, DegType deg_end,
   }
   
   //Setup tesselator
-  GLUtesselatorObj* tess = gluNewTess();
-  gluTessCallback(tess, GLU_TESS_BEGIN, CbTessBegin);
-  gluTessCallback(tess, GLU_TESS_VERTEX, (void(GLAPIENTRY*)(void))CbTessVertex);
-  gluTessCallback(tess, GLU_TESS_END, CbTessEnd);
-  gluTessBeginPolygon(tess, NULL);
+  GLUtesselator* tess = gluNewTess();
+  if (!tess) {
+    printf("Failed to create tessellator\n");
+    return;
+  }
+
+  // Set callbacks
+  gluTessCallback(tess, GLU_TESS_BEGIN, (void (GLAPIENTRY*)())CbTessBegin);
+  gluTessCallback(tess, GLU_TESS_VERTEX, (void (GLAPIENTRY*)())CbTessVertex);
+  gluTessCallback(tess, GLU_TESS_END, (void (GLAPIENTRY*)())CbTessEnd);
+  gluTessCallback(tess, GLU_TESS_COMBINE, (void (GLAPIENTRY*)())CbTessCombine);
+
+  gluTessProperty(tess, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+
+  glColor3f(red, green, blue);
+  gluTessBeginPolygon(tess, nullptr);
   gluTessBeginContour(tess);
-  
 
   unsigned deg_steps_saved = deg_steps;
   // deg :  This var will be the angle adjusted as we draw 
   //        outer arc, left radial segment, inner arc 
   //        and right radial segment, completing the poly.
   DegType deg = deg_begin; 
-  glColor3f(red, blue, green);
   // vertices for outer arc - anti-clockwise
   for (; deg_steps > 0; ++deg, --deg_steps) {
-    deg = deg > 360 ? 1 : deg;
     verts[vert_idx][0] = RADIAL_X(RAD(deg), outer_radius);
     verts[vert_idx][1] = RADIAL_Y(RAD(deg), outer_radius);
-    gluTessVertex(tess, (GLdouble*)(verts[vert_idx].data()), (GLdouble*)(verts[vert_idx].data()));
+    printf("Outer: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
+    gluTessVertex(tess, verts[vert_idx].data(), verts[vert_idx].data());
     ++vert_idx;
   }
-
-  // left most inner arc vertex.
-  verts[vert_idx][0] = RADIAL_X(RAD(deg), inner_radius);
-  verts[vert_idx][1] = RADIAL_Y(RAD(deg), inner_radius);
-  gluTessVertex(tess, (GLdouble*)(verts[vert_idx].data()), (GLdouble*)(verts[vert_idx].data()));
-  ++vert_idx;
 
   // vertices for inner arc - clockwise
   deg_steps = deg_steps_saved;
   for (; deg_steps > 0; --deg, --deg_steps) {
-    deg = deg < 360 ? 0 : deg;
     verts[vert_idx][0] = RADIAL_X(RAD(deg), inner_radius);
-    verts[vert_idx][0] = RADIAL_Y(RAD(deg), inner_radius);
-    gluTessVertex(tess, (GLdouble*)(verts[vert_idx].data()), (GLdouble*)(verts[vert_idx].data()));
+    verts[vert_idx][1] = RADIAL_Y(RAD(deg), inner_radius);
+    printf("Inner: %f, %f\n", verts[vert_idx][0], verts[vert_idx][1]);
+    gluTessVertex(tess, verts[vert_idx].data(), verts[vert_idx].data());
     ++vert_idx;
   }
-
-  // right most outer arc vertex.
-  // May be not needed as tesselator makes a loop ending with the first vertex.
-  verts[vert_idx][0] = RADIAL_X(RAD(deg), outer_radius);
-  verts[vert_idx][0] = RADIAL_Y(RAD(deg), outer_radius);
-  gluTessVertex(tess, (GLdouble*)(verts[vert_idx].data()), (GLdouble*)(verts[vert_idx].data()));
-
 
   gluTessEndContour(tess);
   gluTessEndPolygon(tess);
