@@ -8,13 +8,16 @@
 
 #include <iostream>
 #include <string>
-
+#include <vector>
+#include <ranges>
 
   void App::InitGL(int argc, char** argv) {
     // Main loop taken from the Visual Studio setup test.
     // https://www.badprog.com/c-opengl-setting-up-visual-studio
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     glutInitWindowSize(WIN_WD, WIN_HT);              // window size
     glutInitWindowPosition(500, 500);                // distance from the top-left screen
     glutCreateWindow("RPM");    // message displayed on top bar window
@@ -37,7 +40,6 @@
     _throttle.OnMouse(x_norm, y_norm);
   }
 
-
   void App::DrawDial() {
     // anti-clockwise angle
     const DegType dial_start = 315;
@@ -45,21 +47,22 @@
     const float inner_dial_radius = 0.75f;
     const float outer_dial_radius = 0.8f;
 
+    //< Draw the dial Arc
+    // Fill the dial with RPM colored range zones 
     DrawArcFilled(dial_start, dial_end, outer_dial_radius, inner_dial_radius,
-                  0.3f, 0.3f, 0.3f); // gray background
+      0.3f, 0.3f, 0.3f); // gray background
     DrawArcFilled(dial_start, 10, outer_dial_radius, inner_dial_radius,
-                  0.5f, 0.0f, 0.0f); // red zone
+      0.5f, 0.0f, 0.0f); // red zone
     DrawArcFilled(10, 45, outer_dial_radius, inner_dial_radius,
-                  0.0f, 0.5f, 0.5f); // yellow zone
-    DrawArcFilled(45, 90, outer_dial_radius, inner_dial_radius,
-                  0.0f, 0.5f, 0.0f); // green zone
-                                     // Rest is gray. 
-
+      5.0f, 0.5f, 0.0f); // yellow zone
+    DrawArcFilled(45, 180, outer_dial_radius, inner_dial_radius,
+      0.0f, 0.5f, 0.0f); // green zone
+                         // Rest is gray. 
     glColor3f(1, 1, 1);
     // Draw the dials inner and outer lines (draw borders).
     DrawArc(dial_start, dial_end, outer_dial_radius);
     DrawArc(dial_start, dial_end, inner_dial_radius);
-
+    
 
     DegType dial_full_angle{}; // full span of the dial as an angle(in degrees).
     if (dial_start <= dial_end)
@@ -67,11 +70,30 @@
     else
       dial_full_angle = (360 - dial_start) + dial_end;
 
-    // Draw RPM guage needle.
+    //< Draw needle.
     unsigned rpm = _throttle.GetRPM();
-    DegType needle_angle = dial_start + (dial_full_angle * (10000 - rpm)) / 10000;
-    DrawRadialSegment(needle_angle, 0.02f, 0.7f);
-    DrawArc(0, 360, 0.02f);
+    DegType ndl_rpm_angle = dial_start + (dial_full_angle * (10000 - rpm)) / 10000;
+    float ndl_w = 0.05f;     // needle width
+    float ndl_l = inner_dial_radius;
+    float ndl_tip_l = 0.05f;  // needle tip length
+    glColor3f(1, 1, 1);
+    DrawArcFilled(0, 360, ndl_w / 2, 0.001f, 1, 1, 1); // filled circle at needle pivot point.
+    glRotatef(ndl_rpm_angle, 0, 0, 1);
+    glBegin(GL_POLYGON);
+    std::vector<Point> ndl_verts {  // needle vertices
+      { 0.0f, ndl_w / 2.0f },
+      { ndl_l - ndl_tip_l, ndl_w / 2.0f},
+      { ndl_l, 0.0f},
+      { ndl_l - ndl_tip_l, -ndl_w / 2.0f},
+      { 0.0f, -ndl_w / 2.0f}
+    };
+    for (auto& v : ndl_verts) {
+      glVertex2f(v.x, v.y);
+    }
+    glEnd();
+    glRotatef(-1 * ndl_rpm_angle, 0, 0, 1); // Undo the rotation for rest of the drawing.
+    //> End draw needle 
+
     PrintTextXYPos("RPM x1000", -0.2f, -0.3f);
 
     // Mark the dial with major slots
@@ -99,5 +121,5 @@
       if (mark_pos <= 135 || mark_pos > 270)
         offset = 0.05f;
       PrintTextRadialPos(std::to_string(slot_num--), mark_pos, outer_dial_radius + offset);
-    }
+    } // outer for
   }
