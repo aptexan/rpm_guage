@@ -24,6 +24,7 @@
   void ThrottleWidget::UpdateWidgetRPMLabel() {
     PrintTextXYPos(std::to_string(_rpm), _left + 0.07f, _bottom + 0.03f);
   }
+
   void ThrottleWidget::Draw() {
     // RPM numeric display - clock-wise vertices
     glBegin(GL_LINE_LOOP);

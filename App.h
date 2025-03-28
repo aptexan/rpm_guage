@@ -1,8 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "ThrottleWidget.h"
-
-#include <string>
+#include "Dial.h"
 
 class App {
 public:
@@ -11,8 +10,6 @@ public:
   void OnMouse(int button, int state, int x, int y);
 
 private:
-   void DrawDial();
-
-private:
+  Dial _dial;
   ThrottleWidget _throttle;
 };

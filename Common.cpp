@@ -67,7 +67,7 @@ void DrawArc(DegType deg_begin, DegType deg_end, float radius) {
 void DrawArcFilled( const DegType deg_begin, const DegType deg_end, 
                     const float outer_radius, const float inner_radius,
                     const float red, const float green, const float blue) {
-  float step_size = 0.25;
+  float step_size = 0.25f;
   float deg_steps{};
   if (deg_begin < deg_end) {
     deg_steps = static_cast<unsigned>(deg_end - deg_begin + 1);

@@ -1,18 +1,26 @@
 #pragma once
+#include <tuple>
+#include "Common.h"
 
 class ThrottleWidget {
 public:
+  void Init(unsigned maxrpm, unsigned rpm_increments) {  
+    _max_rpm = maxrpm;  
+    _smallest_step = rpm_increments;
+  }
   void Draw();
   void OnMouse(float x, float y); // updates _rpm
   unsigned GetRPM() { return _rpm;  };
-  unsigned GetMaxRPM() { return _max_rpm;  }
+
 private:
   void UpdateWidgetRPMLabel();
 
 private:
   unsigned _rpm{};
-  const unsigned _max_rpm{ 10000 }; // Widget will set _rpm above _max_rpm value.
-  const unsigned _smallest_step = 50;
+  unsigned _max_rpm{};
+  unsigned _rpm_increments{};
+  
+  unsigned _smallest_step{};
 
   // Positions of the rpm numeric text box.
   float _left{ -0.85f };
@@ -27,4 +35,5 @@ private:
   float _btn_left{};
   float _btn_right{};
   float _btn_mid{};
+
 };
